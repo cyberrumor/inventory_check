@@ -15,7 +15,6 @@ def notify(url):
 
 if __name__ == '__main__':
 	logging.basicConfig(format="%(asctime)s %(levelname)s:%(module)s: %(message)s", level=logging.WARNING)
-	s = requests.Session()
 	header = [
 		{'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'}
 	]
@@ -29,7 +28,7 @@ if __name__ == '__main__':
 		for product in hardware:
 			try:
 				logging.warning('checking {} at {}'.format(product['model'], product['site']))
-				response = s.get(product['url'], headers = random.choice(header))
+				response = requests.get(product['url'], headers = random.choice(header))
 				if product['keyword'] not in response.text:
 					if product['price'] in response.text:
 						notify(product['url'])
