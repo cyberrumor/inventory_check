@@ -10,28 +10,28 @@ def notify(product_name, url):
 	header = {'Content-type': 'application/x-www-form-urlencoded'}
 	payload = {'token': api_token, 'user': user_key, 'message': product_name, 'url': url}
 	response = requests.post('https://api.pushover.net/1/messages.json', headers = header, data = payload)
-	return response.text
+	return
 
 def check_stock(product, header, thread):
 	wait = 11
 	while 1:
-		print('THREAD {}: checking for {} at {}.'.format(thread, product['model'], product['site']))
+		print(f'THREAD {thread}: checking for {product["model"]} at {product["site"]}.')
 		try:
 			response = requests.get(product['url'], headers = header)
 			if product['keyword'] not in response.text:
 				if product['price'] in response.text:
 					notify(product['model'], product['url'])
-					print('THREAD {}: IN STOCK: {} at {}'.format(thread, product['model'], product['site']))
+					print(f'THREAD {thread}: IN STOCK: {product["model"]} at {product["site"]}.')
 					just_notified = True
 				else:
-					print('THREAD {}: we are being fed a fake price from {}.'.format(thread, product['site']))
+					print(f'THREAD {thread}: we are being fed a fake price from {product["site"]}.')
 		except Exception as e:
 			print(e)
 			wait += 1
-			print('THREAD {}: Possible rate limiting. Increasing wait by 1'.format(thread))
-			print('THREAD {}: briefly pausing to reset their limiter...'.format(thread))
+			print(f'THREAD {thread}: Possible rate limiting. Increasing wait by 1')
+			print(f'THREAD {thread}: briefly pausing to reset their limiter...')
 			time.sleep(10)
-		print('THREAD {}: waiting {} seconds for {}'.format(thread, wait, product['site']))
+		print(f'THREAD {thread}: waiting {wait} seconds for {product["site"]}.')
 		time.sleep(wait)
 
 if __name__ == '__main__':
