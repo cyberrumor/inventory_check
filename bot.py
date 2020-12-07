@@ -1,49 +1,49 @@
 #!/Library/Frameworks/Python.framework/Versions/3.9/bin/python3
 import requests
 import time
-from twilio.rest import Client
-import random
-import logging
+import http.client
+import urllib
+from multiprocessing import Process
 from products import *
 from credentials import *
 
-client = Client(first_cred, second_cred)
-def notify(url):
-	client.messages.create(to = notification_recipient,
-				from_ = notification_sender,
-				body = url)
+def notify(product_name, url):
+	conn = http.client.HTTPSConnection('api.pushover.net:443')
+	conn.request('POST', '/1/messages.json',
+		urllib.parse.urlencode({
+			'token': api_token,
+			'user': user_key,
+			'message': product_name,
+			'url': url
+		}), {'Content-type': 'application/x-www-form-urlencoded'})
+	print(conn.getresponse())
+
+def check_stock(product, header, thread):
+	wait = 11
+	while 1:
+		print('THREAD {}: checking for {} at {}.'.format(thread, product['model'], product['site']))
+		try:
+			response = requests.get(product['url'], headers = header)
+			if product['keyword'] not in response.text:
+				if product['price'] in response.text:
+					notify(product['model'], product['url'])
+					print('THREAD {}: IN STOCK: {} at {}'.format(thread, product['model'], product['site']))
+					just_notified = True
+				else:
+					print('THREAD {}: we are being fed a fake price from {}.'.format(thread, product['site']))
+		except Exception as e:
+			print(e)
+			wait += 1
+			print('THREAD {}: Possible rate limiting. Increasing wait by 1'.format(thread))
+			print('THREAD {}: briefly pausing to reset their limiter...'.format(thread))
+			time.sleep(10)
+		print('THREAD {}: waiting {} seconds for {}'.format(thread, wait, product['site']))
+		time.sleep(wait)
 
 if __name__ == '__main__':
-	logging.basicConfig(format="%(asctime)s %(levelname)s:%(module)s: %(message)s", level=logging.WARNING)
-	header = [
-		{'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'}
-	]
-	wait = 6
-	just_notified = False
-	while True:
-		if just_notified:
-			just_notified = False
-			logging.warning('waiting 30 seconds after sending notification...')
-			time.sleep(30)
-		for product in hardware:
-			try:
-				logging.warning('checking {} at {}'.format(product['model'], product['site']))
-				response = requests.get(product['url'], headers = random.choice(header))
-				if product['keyword'] not in response.text:
-					if product['price'] in response.text:
-						notify(product['url'])
-						logging.warning('IN STOCK: ' + product['model'] + ' at ' + product['site'])
-						logging.warning(product['url'])
-						logging.warning('notification sent')
-						just_notified = True
-					else:
-						logging.warning('we are being fed a fake price from ' + product['site'])
-			except Exception as e:
-				logging.warning(e)
-				wait += 1
-				logging.warning('Possible rate limiting. Increasing wait by 1')
-				logging.warning('briefly pausing to reset their limiter...')
-				time.sleep(10)
-		jitter = random.randint(3, 9) + wait
-		logging.warning('waiting {} seconds'.format(jitter))
-		time.sleep(jitter)
+	header = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'}
+	thread = 1
+	for product in hardware:
+		p = Process(target = check_stock, args = (product, header, thread))
+		p.start()
+		thread += 1
