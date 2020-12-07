@@ -1,22 +1,16 @@
 #!/Library/Frameworks/Python.framework/Versions/3.9/bin/python3
+import json
 import requests
 import time
-import http.client
-import urllib
 from multiprocessing import Process
 from products import *
 from credentials import *
 
 def notify(product_name, url):
-	conn = http.client.HTTPSConnection('api.pushover.net:443')
-	conn.request('POST', '/1/messages.json',
-		urllib.parse.urlencode({
-			'token': api_token,
-			'user': user_key,
-			'message': product_name,
-			'url': url
-		}), {'Content-type': 'application/x-www-form-urlencoded'})
-	print(conn.getresponse())
+	header = {'Content-type': 'application/x-www-form-urlencoded'}
+	payload = {'token': api_token, 'user': user_key, 'message': product_name, 'url': url}
+	response = requests.post('https://api.pushover.net/1/messages.json', headers = header, data = payload)
+	return response.status
 
 def check_stock(product, header, thread):
 	wait = 11
@@ -24,7 +18,7 @@ def check_stock(product, header, thread):
 		print('THREAD {}: checking for {} at {}.'.format(thread, product['model'], product['site']))
 		try:
 			response = requests.get(product['url'], headers = header)
-			if product['keyword'] not in response.text:
+			if product['keyword'] in response.text:
 				if product['price'] in response.text:
 					notify(product['model'], product['url'])
 					print('THREAD {}: IN STOCK: {} at {}'.format(thread, product['model'], product['site']))
