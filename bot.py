@@ -10,7 +10,7 @@ def notify(product_name, url):
 	header = {'Content-type': 'application/x-www-form-urlencoded'}
 	payload = {'token': api_token, 'user': user_key, 'message': product_name, 'url': url}
 	response = requests.post('https://api.pushover.net/1/messages.json', headers = header, data = payload)
-	return response.status
+	return response.text
 
 def check_stock(product, header, thread):
 	wait = 11
@@ -18,7 +18,7 @@ def check_stock(product, header, thread):
 		print('THREAD {}: checking for {} at {}.'.format(thread, product['model'], product['site']))
 		try:
 			response = requests.get(product['url'], headers = header)
-			if product['keyword'] in response.text:
+			if product['keyword'] not in response.text:
 				if product['price'] in response.text:
 					notify(product['model'], product['url'])
 					print('THREAD {}: IN STOCK: {} at {}'.format(thread, product['model'], product['site']))
