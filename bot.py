@@ -1,5 +1,4 @@
-#!/Library/Frameworks/Python.framework/Versions/3.9/bin/python3
-import json
+#!/usr/bin/env python3
 import requests
 import time
 from multiprocessing import Process
