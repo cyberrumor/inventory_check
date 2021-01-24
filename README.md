@@ -2,7 +2,7 @@
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberrumor)
 
-Checks inventory of configurable products with automatic rate limiting. Threaded. Notifies via Pushover.
+Checks inventory of configurable products with automatic rate limiting. Notifies via Pushover.
 
 
 Please be polite and don't spam retailers with excessive requests. Don't use this for reselling.
