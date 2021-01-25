@@ -13,9 +13,9 @@ def notify(product_name, url):
 
 
 # returns true or false. Did we get the name we expected?
-def get_seller_name(soup, seller_name, selector, seller_id):
-    seller = soup.find('a', attrs = {selector: seller_id}).string
-    if seller == seller_name:
+def authentic_seller(soup, seller_name, selector, seller_id):
+    seller = soup.find(attrs = {selector: seller_id})
+    if seller.string == seller_name:
         return True
     else:
         return False
@@ -23,6 +23,7 @@ def get_seller_name(soup, seller_name, selector, seller_id):
 # returns price if price. Returns false if any error at all.
 def get_price(soup, product):
     price = soup.find(attrs = product['price_selector'])
+    print(f'price: {price}')
     if product['price_nested']:
         result = price[product['price_key']]
     else:
@@ -38,21 +39,19 @@ def get_stock(soup, product):
     else:
         return True
 
+# triggers notification if item is in stock, returns otherwise. 
 def check_stock(product, header):
     print(f'{product["site"]} \t {product["model"]} \t CHECKING')
     for key, value in product['additional_headers'].items():
         header[key] = value
-    response = requests.get(product['url'], headers = header, timeout = 0.5)
+    response = requests.get(product['url'], headers = header, timeout = 3)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, 'lxml')
 
     if 'seller' in list(product.keys()):
-        safe = get_seller_name(soup, product['seller'], product['seller_selector'], product['seller_id'])
-    else:
-        safe = True
-
-    if safe:
+        if not authentic_seller(soup, product['seller'], product['seller_selector'], product['seller_id']):
+            return
         # check if in stock
         in_stock = get_stock(soup, product)
         if in_stock:
