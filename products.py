@@ -7,8 +7,10 @@ hardware = [
         'oos_selector': 'class',
         'price_selector': {'class': 'priceView-hero-price priceView-customer-price'},
         'price_nested': False,
-	'model': 'PS5'
-	},
+	'model': 'PS5',
+        #'additional_headers': {'origin': 'https://www.bestbuy.com'},
+        'additional_headers': {},
+        },
 	{
 	'site': 'walmart',
         'url': 'https://www.walmart.com/ip/Sony-PlayStation-5-Digital-Edition/493824815',
@@ -24,5 +26,6 @@ hardware = [
         'price_selector': {'itemprop': 'price'},
         'price_nested': True,
         'price_key': 'content',
+        'additional_headers': {},
         }
 ]
