@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 import requests
 from bs4 import BeautifulSoup
-import time
 
 file = __file__.split('/')[-1]
 print(f'{file} successfully imported')
+
+# returns true if in stock, false otherwise.
+def item_is_in_stock(soup):
+	inventory = str(soup.find(attrs = {'class': 'product-inventory'}))
+	if 'OUT OF STOCK' in inventory:
+		return False
+	else:
+		return True
 
 def search(product):
 	url = 'https://www.newegg.com'

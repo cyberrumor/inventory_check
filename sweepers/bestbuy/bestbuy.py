@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 import requests
 from bs4 import BeautifulSoup
-import time
 
 file = __file__.split('/')[-1]
 print(f'{file} successfully imported')
 
-def get_price(soup):
-	price = soup.find(attrs = {'class': 'priceView-hero-price priceView-customer-price'})
-	return price
+
+def item_is_in_stock(soup):
+	inventory = str(soup.find(attrs = {'class': 'add-to-cart-button'}))
+	if 'Sold Out</button>' in inventory:
+		return False
+	else:
+		return True
 
 def search(product):
 	url = 'https://bestbuy.com'
