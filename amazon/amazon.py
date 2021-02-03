@@ -58,7 +58,7 @@ def search(product):
 		else:
 			price = '0.00'
 
-		result.append({'site': 'amazon', 'title': title, 'price': price, 'url': href})
+		result.append({'site': 'amazon', 'title': title, 'price': price, 'url': 'http://amazon.com' + href})
 
 
 	return result
